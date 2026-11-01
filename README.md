@@ -4,6 +4,8 @@
 
 **דף הסקיל והורדה:** https://jordanhemo.github.io/il-accessibility-audit/
 
+הדף נמצא בתיקיית `docs/` ומוכן לפריסה גם ב-Vercel: מייבאים את הריפו ב-[vercel.com/new](https://vercel.com/new), משאירים Framework Preset על "Other" ולוחצים Deploy. קובץ `vercel.json` כבר מגדיר את `docs/` כתיקיית הפלט.
+
 ## מה הסקיל עושה
 
 1. **סורק** קובצי HTML, ‏JSX/TSX, ‏Vue, ‏Svelte ו-CSS עם סקריפט קריאה-בלבד (Python 3, ללא תלויות).

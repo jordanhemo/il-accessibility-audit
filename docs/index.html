@@ -2,294 +2,426 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>בודק נגישות ישראלי ל-Claude</title>
-<meta name="description" content="סקיל חינמי ל-Claude שסורק פרויקט אינטרנט לפי תקן ישראלי 5568 ותקנות נגישות השירות, מפיק דוח ומתקן את מה שבטוח לתקן.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>בודק נגישות ישראלי</title>
+<meta name="description" content="סקיל חינמי ל-Claude שסורק פרויקט אינטרנט לפי תקן ישראלי 5568, מפיק דוח ומתקן את מה שבטוח לתקן.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* Layout: a diagnostic surface. Headline column on the start side, a live mock-browser being scanned beside it;
+   every section illustrated with the instruments of accessibility itself (focus ring, contrast meter, diff). */
 :root {
-  --bg: #fbfaf7;
-  --surface: #ffffff;
-  --text: #1c1b19;
-  --muted: #55524b;
-  --line: #e4e0d6;
-  --accent: #0b5cad;
-  --accent-text: #ffffff;
-  --accent-soft: #e6effa;
-  --ok: #1d6b3a;
-  --warn: #8a4b00;
-  --crit: #a1261c;
-  --code-bg: #f1eee6;
-  --focus: #c25e00;
+  --paper: #f3f5f8;
+  --paper-2: #e8ecf2;
+  --panel: #ffffff;
+  --ink: #0f1626;
+  --ink-2: #4a5468;
+  --rule: #cfd6e1;
+  --focus: #ff8a1f;          /* graphics only */
+  --focus-ink: #a84200;      /* text on paper */
+  --focus-soft: #ffeedd;
+  --ok: #157a4a;
+  --ok-soft: #d9f2e4;
+  --crit: #c2271f;
+  --crit-soft: #fde0dd;
+  --warn: #8a5900;
+  --warn-soft: #fff3cc;
+  --code-bg: #0f1626;
+  --code-fg: #e9eef7;
+  --code-add: #7fe0a8;
+  --code-del: #ff9f98;
+  --display: "Karantina", "Assistant", system-ui, sans-serif;
+  --body: "Assistant", "Heebo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141412;
-    --surface: #1d1c1a;
-    --text: #f2efe8;
-    --muted: #b7b2a7;
-    --line: #34322d;
-    --accent: #7db7f5;
-    --accent-text: #0b1a2b;
-    --accent-soft: #1c2a3a;
-    --ok: #7fd39b;
-    --warn: #f2b56b;
-    --crit: #ff9a90;
-    --code-bg: #26241f;
-    --focus: #ffb35c;
+    --paper: #0d1220; --paper-2: #131a2c; --panel: #171f33; --ink: #eef2f9; --ink-2: #aab4c8; --rule: #2a3449;
+    --focus: #ffa14d; --focus-ink: #ffb46b; --focus-soft: #3a2410;
+    --ok: #6fd79b; --ok-soft: #10301f; --crit: #ff8d84; --crit-soft: #3d1613; --warn: #f5c45a; --warn-soft: #3a2d08;
+    --code-bg: #060912; --code-fg: #e9eef7; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141412; --surface: #1d1c1a; --text: #f2efe8; --muted: #b7b2a7; --line: #34322d;
-  --accent: #7db7f5; --accent-text: #0b1a2b; --accent-soft: #1c2a3a;
-  --ok: #7fd39b; --warn: #f2b56b; --crit: #ff9a90; --code-bg: #26241f; --focus: #ffb35c;
+  --paper: #0d1220; --paper-2: #131a2c; --panel: #171f33; --ink: #eef2f9; --ink-2: #aab4c8; --rule: #2a3449;
+  --focus: #ffa14d; --focus-ink: #ffb46b; --focus-soft: #3a2410;
+  --ok: #6fd79b; --ok-soft: #10301f; --crit: #ff8d84; --crit-soft: #3d1613; --warn: #f5c45a; --warn-soft: #3a2d08;
+  --code-bg: #060912; --code-fg: #e9eef7; color-scheme: dark;
 }
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Heebo", system-ui, sans-serif;
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  margin: 0; direction: rtl;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--body); font-size: 1.0625rem; line-height: 1.65;
 }
-a { color: var(--accent); text-underline-offset: 3px; }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
-.skip-link {
-  position: absolute; inset-inline-start: 16px; top: -100px;
-  background: var(--accent); color: var(--accent-text);
-  padding: 10px 16px; border-radius: 8px; font-weight: 700; z-index: 10;
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+code, pre, .mono { font-family: var(--mono); }
+.wrap {
+  max-width: 1120px; margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.skip-link:focus { top: 16px; }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
-header.top {
-  border-bottom: 1px solid var(--line);
+.skip { position: absolute; top: -80px; inset-inline-start: 16px; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 8px; font-weight: 700; z-index: 20; }
+.skip:focus { top: 16px; }
+
+/* ---------- top bar ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--paper) 85%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--rule); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 11; background: var(--paper); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; }
+.logo svg { width: 30px; height: 30px; }
+.top nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 22px; flex-wrap: wrap; }
+.top nav a { text-decoration: none; color: var(--ink-2); font-weight: 600; }
+.top nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- hero ---------- */
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; padding-block: 64px 48px; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--focus-ink); font-size: 0.95rem; letter-spacing: 0.02em; }
+.kicker::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--focus); box-shadow: 0 0 0 4px var(--focus-soft); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(3.4rem, 8.5vw, 6.6rem); line-height: 0.92; letter-spacing: 0.005em; margin: 18px 0 20px; }
+h1 em { font-style: normal; color: var(--focus-ink); }
+.lede { font-size: 1.25rem; color: var(--ink-2); max-width: 34rem; margin: 0 0 28px; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid var(--ink); transition: transform .15s ease; }
+.btn:hover { transform: translateY(-1px); }
+.btn-ink { background: var(--ink); color: var(--paper); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn svg { width: 18px; height: 18px; }
+.meta { margin: 16px 0 0; color: var(--ink-2); font-size: 0.95rem; display: flex; gap: 14px; flex-wrap: wrap; }
+.meta span::before { content: "•"; margin-inline-end: 8px; color: var(--focus); }
+.meta span:first-child::before { content: none; }
+
+/* mock browser scan */
+.scan { position: relative; background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; box-shadow: 0 30px 60px -30px rgba(15,22,38,.35); overflow: hidden; }
+.scan .bar { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--rule); background: var(--paper-2); direction: ltr; }
+.scan .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); }
+.scan .bar .url { margin-inline-start: 10px; flex: 1; height: 10px; border-radius: 5px; background: var(--rule); }
+.scan svg { display: block; width: 100%; height: auto; }
+.scan .sweep { position: absolute; inset-inline: 0; top: 44px; height: 3px; background: linear-gradient(90deg, transparent, var(--focus), transparent); box-shadow: 0 0 18px 4px color-mix(in srgb, var(--focus) 55%, transparent); animation: sweep 5s ease-in-out infinite; }
+@keyframes sweep { 0% { transform: translateY(0); opacity: 0 } 8% { opacity: 1 } 92% { opacity: 1 } 100% { transform: translateY(380px); opacity: 0 } }
+.flag { position: absolute; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; border: 1px solid; animation: pop .5s ease both; }
+.flag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.flag.crit { color: var(--crit); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 35%, transparent); }
+.flag.warn { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+.flag.ok   { color: var(--ok);   background: var(--ok-soft);   border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+@keyframes pop { from { transform: scale(.85) } to { transform: scale(1) } }
+.flag:nth-of-type(2) { animation-delay: .15s } .flag:nth-of-type(3) { animation-delay: .3s } .flag:nth-of-type(4) { animation-delay: .45s } .flag:nth-of-type(5) { animation-delay: .6s }
+.scan .ring { stroke: var(--focus); stroke-width: 3; fill: none; stroke-dasharray: 6 4; animation: ring 1.2s linear infinite; }
+@keyframes ring { to { stroke-dashoffset: -20 } }
+@media (prefers-reduced-motion: reduce) {
+  .scan .sweep { display: none } .flag { animation: none } .scan .ring { animation: none } .btn { transition: none } html { scroll-behavior: auto }
 }
-header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
-.brand { font-weight: 800; text-decoration: none; color: var(--text); }
-nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; flex-wrap: wrap; }
-nav a { color: var(--muted); text-decoration: none; font-weight: 500; }
-nav a:hover { color: var(--text); text-decoration: underline; }
 
-.hero { padding-block: 72px 56px; }
-.eyebrow { color: var(--accent); font-weight: 700; margin: 0 0 12px; }
-h1 { font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.15; margin: 0 0 20px; font-weight: 800; letter-spacing: -0.01em; }
-.lede { font-size: 1.25rem; color: var(--muted); max-width: 680px; margin: 0 0 32px; }
-.cta { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 22px; border-radius: 10px; font-weight: 700; text-decoration: none;
-  border: 2px solid var(--accent);
-}
-.btn-primary { background: var(--accent); color: var(--accent-text); }
-.btn-primary:hover { filter: brightness(1.08); }
-.btn-secondary { color: var(--accent); background: transparent; }
-.btn-secondary:hover { background: var(--accent-soft); }
-.small { font-size: 0.9375rem; color: var(--muted); margin-top: 14px; }
+/* ---------- sections ---------- */
+section { padding-block: 72px; border-top: 1px solid var(--rule); }
+.sec-head { display: grid; grid-template-columns: auto 1fr; gap: 20px 28px; align-items: end; margin-bottom: 40px; }
+.sec-num { font-family: var(--display); font-size: 4rem; line-height: 0.8; color: var(--focus); font-weight: 700; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(2.2rem, 4.5vw, 3.4rem); line-height: 0.95; }
+.sec-head p { grid-column: 2; margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.1rem; }
 
-section { padding-block: 56px; border-top: 1px solid var(--line); }
-h2 { font-size: 1.75rem; margin: 0 0 12px; font-weight: 800; }
-.section-lede { color: var(--muted); margin: 0 0 32px; max-width: 680px; }
+/* fix vs suggest */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 26px; min-width: 0; }
+.panel h3 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pill { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; font-weight: 700; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.warn { background: var(--warn-soft); color: var(--warn); }
+.panel p { color: var(--ink-2); margin: 0 0 16px; }
+pre.diff { direction: ltr; text-align: left; margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 16px 18px; font-size: 0.9rem; line-height: 1.7; overflow-x: auto; }
+.diff .del { color: var(--code-del); } .diff .add { color: var(--code-add); } .diff .cm { opacity: .55; }
+.suggest { direction: rtl; background: var(--paper-2); border-radius: 10px; padding: 16px 18px; font-size: 0.95rem; }
+.suggest dt { font-weight: 700; margin-top: 10px; } .suggest dt:first-child { margin-top: 0 } .suggest dd { margin: 2px 0 0; color: var(--ink-2); }
+.suggest code { background: var(--panel); padding: 1px 6px; border-radius: 4px; direction: ltr; unicode-bidi: isolate; font-size: 0.9em; }
 
-.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; counter-reset: s; }
-.steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; counter-increment: s; }
-.steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 800; margin-bottom: 10px; }
-.steps h3 { margin: 0 0 6px; font-size: 1.125rem; }
-.steps p { margin: 0; color: var(--muted); }
+/* checks grid */
+.checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; list-style: none; padding: 0; margin: 0; }
+.checks li { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; min-width: 0; }
+.checks svg { width: 44px; height: 44px; }
+.checks b { display: block; font-size: 1.05rem; line-height: 1.3; }
+.checks small { display: block; color: var(--ink-2); margin-top: 4px; font-size: 0.88rem; }
+.checks .tag { display: inline-block; margin-top: 8px; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); } .tag.warn { background: var(--warn-soft); color: var(--warn); } .tag.law { background: var(--focus-soft); color: var(--focus-ink); }
 
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-table { border-collapse: collapse; width: 100%; min-width: 560px; }
-caption { text-align: start; padding: 14px 16px; font-weight: 700; }
-th, td { text-align: start; padding: 12px 16px; border-top: 1px solid var(--line); vertical-align: top; }
-th { font-weight: 700; background: var(--code-bg); }
-td code, p code, li code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; direction: ltr; unicode-bidi: isolate; }
-.tag { display: inline-block; font-size: 0.8125rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
-.tag-fix { color: var(--ok); }
-.tag-suggest { color: var(--warn); }
+/* contrast tool */
+.tool { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; align-items: stretch; }
+.tool .panel { display: grid; gap: 16px; align-content: start; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 700; font-size: 0.95rem; }
+.field .row { display: flex; gap: 10px; align-items: center; }
+.field input[type="color"] { width: 48px; height: 40px; border: 1px solid var(--rule); border-radius: 8px; padding: 2px; background: var(--panel); cursor: pointer; }
+.field input[type="text"] { flex: 1; min-width: 0; font-family: var(--mono); font-size: 1rem; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); direction: ltr; }
+.preview { border-radius: 16px; border: 1px solid var(--rule); padding: 28px; display: grid; gap: 14px; align-content: center; min-width: 0; }
+.preview .big { font-family: var(--display); font-size: 3.2rem; line-height: 1; font-weight: 700; }
+.preview .small { font-size: 1rem; }
+.ratio { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; direction: ltr; justify-content: flex-end; }
+.ratio b { font-family: var(--display); font-size: 3.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.verdicts { display: flex; gap: 8px; flex-wrap: wrap; }
+.verdict { font-size: 0.85rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); }
+.verdict.pass { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.verdict.fail { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
+.meter { height: 10px; border-radius: 5px; background: var(--paper-2); position: relative; overflow: hidden; }
+.meter i { position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: 5px; background: var(--focus); transition: width .3s ease; }
+.meter-marks { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 
-.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
-.card h3 { margin: 0 0 10px; font-size: 1.1875rem; }
-.card ol, .card ul { margin: 0; padding-inline-start: 22px; }
-.card li + li { margin-top: 6px; }
-pre {
-  direction: ltr; text-align: left;
-  background: var(--code-bg); border-radius: 8px; padding: 14px 16px; overflow-x: auto;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.875rem; line-height: 1.6; margin: 12px 0 0;
-}
-.prompts { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.prompts li { background: var(--surface); border: 1px solid var(--line); border-inline-start: 4px solid var(--accent); border-radius: 8px; padding: 14px 18px; }
+/* install */
+.install { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.install ol { margin: 0; padding-inline-start: 22px; color: var(--ink-2); }
+.install li + li { margin-top: 8px; }
+pre.sh { direction: ltr; text-align: left; margin: 12px 0 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px 16px; font-size: 0.88rem; line-height: 1.7; overflow-x: auto; }
+.prompts { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
+.prompts li { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 18px; position: relative; padding-inline-start: 46px; }
+.prompts li::before { content: "›"; position: absolute; inset-inline-start: 18px; top: 8px; font-size: 1.6rem; color: var(--focus); font-weight: 700; }
 
-.report-sample { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
-.report-sample .stats { display: flex; gap: 24px; flex-wrap: wrap; margin: 8px 0 18px; }
-.stat strong { display: block; font-size: 1.75rem; font-weight: 800; line-height: 1.2; }
-.stat span { color: var(--muted); font-size: 0.9375rem; }
-.sev-crit { color: var(--crit); }
-.sev-ok { color: var(--ok); }
+/* law stamp */
+.law { display: grid; grid-template-columns: 180px 1fr; gap: 32px; align-items: center; background: var(--panel); border: 1px solid var(--rule); border-radius: 18px; padding: 32px; }
+.law svg { width: 180px; height: 180px; max-width: 100%; }
+.law p { margin: 0 0 12px; color: var(--ink-2); } .law p:last-child { margin: 0; }
+.law strong { color: var(--ink); }
 
-.note { background: var(--accent-soft); border-radius: 12px; padding: 20px 24px; }
-.note p { margin: 0; }
-.note p + p { margin-top: 10px; }
-
-footer { border-top: 1px solid var(--line); padding-block: 32px 48px; color: var(--muted); }
-footer h2 { font-size: 1.25rem; color: var(--text); }
+footer { border-top: 1px solid var(--rule); padding-block: 36px 56px; color: var(--ink-2); font-size: 0.95rem; }
+footer .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+footer h2 { font-size: 1.6rem; margin-bottom: 8px; color: var(--ink); }
 footer p { margin: 0 0 8px; }
 
-@media (max-width: 640px) {
-  header.top .wrap { flex-direction: column; align-items: flex-start; }
-  .hero { padding-block: 48px 40px; }
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-block: 44px 36px; }
+  .split, .tool, .install, footer .wrap { grid-template-columns: 1fr; }
+  .law { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .sec-head { grid-template-columns: 1fr; } .sec-head p { grid-column: 1; }
+  .top .wrap { flex-direction: column; align-items: flex-start; }
   .btn { width: 100%; justify-content: center; }
 }
 </style>
 </head>
 <body>
-<a class="skip-link" href="#main">דלג לתוכן העמוד</a>
+<a class="skip" href="#main">דלג לתוכן העמוד</a>
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#main">בודק נגישות ישראלי</a>
+    <a class="logo" href="#main" aria-label="בודק נגישות ישראלי, לראש העמוד">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="7 4"/><circle cx="16" cy="16" r="5" fill="var(--focus)"/></svg>
+      <span>בודק נגישות ישראלי</span>
+    </a>
     <nav aria-label="ניווט ראשי">
       <ul>
         <li><a href="#how">איך זה עובד</a></li>
         <li><a href="#checks">מה נבדק</a></li>
+        <li><a href="#contrast">מד ניגודיות</a></li>
         <li><a href="#install">התקנה</a></li>
-        <li><a href="#statement">הצהרת נגישות</a></li>
+        <li><a href="#law">החוק</a></li>
       </ul>
     </nav>
   </div>
 </header>
 
 <main id="main" tabindex="-1">
-  <div class="wrap hero">
-    <p class="eyebrow">סקיל חינמי וקוד פתוח ל-Claude</p>
-    <h1>האתר שלך עומד בחוק הנגישות?<br>Claude יבדוק ויתקן.</h1>
-    <p class="lede">
-      הסקיל סורק פרויקט אינטרנט לפי תקן ישראלי 5568 ותקנות נגישות השירות,
-      מפיק דוח מסודר עם קובץ ושורה לכל בעיה, מתקן אוטומטית את מה שבטוח לתקן
-      ומציע פתרון מדויק לכל השאר.
-    </p>
-    <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/jordanhemo/il-accessibility-audit/raw/main/docs/il-accessibility-audit.skill">הורדת הסקיל (‎.skill)</a>
-      <a class="btn btn-secondary" href="https://github.com/jordanhemo/il-accessibility-audit">קוד המקור ב-GitHub</a>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="kicker">סקיל קוד פתוח ל-Claude</span>
+        <h1>האתר שלך<br><em>עומד בחוק</em><br>הנגישות?</h1>
+        <p class="lede">
+          הסקיל סורק את הקוד לפי תקן ישראלי 5568, מסמן כל בעיה עם קובץ ושורה,
+          מתקן בעצמו את מה שיש לו תשובה אחת נכונה, ומציע פתרון מדויק לכל השאר.
+        </p>
+        <div class="cta">
+          <a class="btn btn-ink" href="https://github.com/jordanhemo/il-accessibility-audit/raw/main/docs/il-accessibility-audit.skill">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            הורדת הסקיל
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/jordanhemo/il-accessibility-audit">הקוד ב-GitHub</a>
+        </div>
+        <p class="meta"><span>HTML / CSS / JS</span><span>React / Next.js</span><span>Vue</span><span>Svelte</span><span>בלי תלויות</span></p>
+      </div>
+
+      <div class="scan" role="img" aria-label="הדמיה של סריקת עמוד: סמנים מציינים תמונה ללא טקסט חלופי, שדה ללא תווית, ניגודיות נמוכה, ושני תיקונים שבוצעו">
+        <div class="bar"><i></i><i></i><i></i><span class="url"></span></div>
+        <svg viewBox="0 0 520 380" aria-hidden="true">
+          <rect x="0" y="0" width="520" height="380" fill="var(--panel)"/>
+          <rect x="40" y="28" width="440" height="22" rx="4" fill="var(--paper-2)"/>
+          <rect x="40" y="62" width="300" height="12" rx="3" fill="var(--rule)"/>
+          <rect x="40" y="82" width="340" height="12" rx="3" fill="var(--rule)"/>
+          <rect x="40" y="102" width="220" height="12" rx="3" fill="var(--rule)"/>
+          <rect x="40" y="140" width="200" height="120" rx="8" fill="var(--paper-2)"/>
+          <path d="M60 240l45-55 35 40 25-28 35 43z" fill="var(--rule)"/>
+          <circle cx="200" cy="170" r="12" fill="var(--rule)"/>
+          <rect x="268" y="140" width="212" height="12" rx="3" fill="var(--rule)"/>
+          <rect x="268" y="160" width="190" height="12" rx="3" fill="var(--rule)"/>
+          <rect x="268" y="196" width="212" height="34" rx="6" fill="var(--paper-2)" stroke="var(--rule)"/>
+          <rect x="268" y="236" width="120" height="26" rx="6" fill="var(--rule)"/>
+          <rect x="40" y="290" width="440" height="50" rx="8" fill="#9aa3b2"/>
+          <rect x="60" y="308" width="170" height="14" rx="3" fill="#b4bcc9"/>
+          <rect x="268" y="196" width="212" height="34" rx="6" class="ring"/>
+        </svg>
+        <span class="sweep" aria-hidden="true"></span>
+        <span class="flag crit" style="top:150px; inset-inline-start:30px">תמונה בלי alt</span>
+        <span class="flag crit" style="top:222px; inset-inline-end:28px">שדה בלי label</span>
+        <span class="flag warn" style="top:338px; inset-inline-start:40px">ניגודיות 1.6:1</span>
+        <span class="flag ok" style="top:56px; inset-inline-end:28px">נוסף lang="he" dir="rtl"</span>
+        <span class="flag ok" style="top:270px; inset-inline-end:150px">tabindex תוקן</span>
+      </div>
     </div>
-    <p class="small">עובד עם HTML/CSS/JS, ‏React/Next.js, ‏Vue ו-Svelte. ללא תלויות חיצוניות.</p>
   </div>
 
-  <section id="how" aria-labelledby="how-title">
+  <section id="how" aria-labelledby="how-t">
     <div class="wrap">
-      <h2 id="how-title">איך זה עובד</h2>
-      <p class="section-lede">מבקשים מ-Claude לבדוק נגישות, והסקיל מנחה אותו בארבעה שלבים.</p>
-      <ol class="steps">
-        <li>
-          <h3>סריקה</h3>
-          <p>סקריפט קריאה-בלבד עובר על קובצי HTML, ‏JSX, ‏Vue ו-CSS ומאתר הפרות.</p>
-        </li>
-        <li>
-          <h3>מיון</h3>
-          <p>כל ממצא מסווג: האם יש לו תיקון אחד ויחיד ונכון, או שהוא דורש החלטה אנושית.</p>
-        </li>
-        <li>
-          <h3>תיקון</h3>
-          <p>רק תיקונים חד-משמעיים מיושמים בקוד. תוכן כמו טקסט חלופי או צבעי מותג לא מנוחש.</p>
-        </li>
-        <li>
-          <h3>דוח</h3>
-          <p>נוצר <code>accessibility-report.md</code> בעברית, ממוין לפי חומרה, עם הפניה לסעיף התקן.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section id="checks" aria-labelledby="checks-title">
-    <div class="wrap">
-      <h2 id="checks-title">מה נבדק</h2>
-      <p class="section-lede">קריטריוני WCAG 2.0/2.1 ברמת AA שעליהם מבוסס התקן הישראלי, ועוד דרישות שייחודיות לישראל.</p>
-      <div class="table-wrap">
-        <table>
-          <caption>בדיקות הסקיל</caption>
-          <thead>
-            <tr><th scope="col">בדיקה</th><th scope="col">סעיף</th><th scope="col">טיפול</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>שפת העמוד (<code>lang="he"</code>)</td><td>WCAG 3.1.1</td><td><span class="tag tag-fix">תיקון אוטומטי</span></td></tr>
-            <tr><td>כיווניות מימין לשמאל (<code>dir="rtl"</code>)</td><td>דרישה ישראלית</td><td><span class="tag tag-fix">תיקון אוטומטי</span></td></tr>
-            <tr><td><code>tabindex</code> חיובי ששובר את סדר המעבר</td><td>WCAG 2.4.3</td><td><span class="tag tag-fix">תיקון אוטומטי</span></td></tr>
-            <tr><td>הצהרת נגישות חסרה</td><td>תקנות נגישות לשירות, 2013</td><td><span class="tag tag-suggest">הצעה + תבנית</span></td></tr>
-            <tr><td>תמונות ללא טקסט חלופי</td><td>WCAG 1.1.1</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>שדות טופס ללא תווית</td><td>WCAG 1.3.1, 4.1.2</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>ניגודיות צבעים נמוכה (חישוב יחס אמיתי)</td><td>WCAG 1.4.3</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>קישורים וכפתורים ללא טקסט נגיש</td><td>WCAG 2.4.4, 4.1.2</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>היררכיית כותרות, ‏h1 חסר או כפול</td><td>WCAG 1.3.1</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>קישור "דלג לתוכן"</td><td>WCAG 2.4.1</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>תפקידי ARIA לא תקינים</td><td>WCAG 4.1.2</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-            <tr><td>וידאו או שמע שמתנגנים אוטומטית</td><td>WCAG 1.4.2</td><td><span class="tag tag-suggest">הצעת פתרון</span></td></tr>
-          </tbody>
-        </table>
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">01</span>
+        <h2 id="how-t">מתקן מה שבטוח. מציע מה שלא.</h2>
+        <p>הסקיל מבדיל בין ממצא שיש לו תיקון אחד נכון לבין ממצא שדורש שיקול דעת. הוא לא ממציא טקסט חלופי ולא מחליף צבעי מותג על דעת עצמו.</p>
       </div>
-    </div>
-  </section>
+      <div class="split">
+        <div class="panel">
+          <h3>תיקון אוטומטי <span class="pill ok">מיושם בקוד</span></h3>
+          <p>כשהתשובה ידועה מראש, Claude עורך את הקובץ ומסמן בדוח שהבעיה טופלה.</p>
+<pre class="diff" aria-label="דוגמת diff של תיקון אוטומטי"><span class="cm">index.html</span>
+<span class="del">- &lt;html&gt;</span>
+<span class="add">+ &lt;html lang="he" dir="rtl"&gt;</span>
 
-  <section aria-labelledby="sample-title">
-    <div class="wrap">
-      <h2 id="sample-title">דוגמה לתוצאה</h2>
-      <p class="section-lede">מתוך הרצת בדיקה על פרויקט דוגמה עם HTML, ‏React ו-Vue.</p>
-      <div class="report-sample">
-        <div class="stats">
-          <div class="stat"><strong>17</strong><span>ממצאים</span></div>
-          <div class="stat"><strong class="sev-ok">3</strong><span>תוקנו אוטומטית</span></div>
-          <div class="stat"><strong>14</strong><span>עם הצעת פתרון</span></div>
-          <div class="stat"><strong class="sev-crit">1</strong><span>חובה חוקית: אין הצהרת נגישות</span></div>
+<span class="cm">components/Nav.vue</span>
+<span class="del">- &lt;a href="/profile" tabindex="3"&gt;</span>
+<span class="add">+ &lt;a href="/profile" tabindex="0"&gt;</span></pre>
         </div>
-        <div class="table-wrap">
-          <table>
-            <caption>קטע מהדוח</caption>
-            <thead>
-              <tr><th scope="col">קובץ:שורה</th><th scope="col">ממצא</th><th scope="col">WCAG</th><th scope="col">סטטוס</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><code>index.html:2</code></td><td>חסר <code>lang</code> בתג html</td><td>3.1.1</td><td><span class="tag tag-fix">תוקן</span></td></tr>
-              <tr><td><code>Hero.jsx:5</code></td><td>תמונה ללא טקסט חלופי</td><td>1.1.1</td><td><span class="tag tag-suggest">דורש החלטה</span></td></tr>
-              <tr><td><code>style.css:1</code></td><td>ניגודיות 1.27:1 (נדרש 4.5:1)</td><td>1.4.3</td><td><span class="tag tag-suggest">דורש החלטה</span></td></tr>
-            </tbody>
-          </table>
+        <div class="panel">
+          <h3>הצעת פתרון <span class="pill warn">דורש החלטה</span></h3>
+          <p>כשצריך תוכן או עיצוב, הדוח מביא את המיקום המדויק ואת הצעד הבא, בלי לנחש.</p>
+          <dl class="suggest">
+            <dt><code>Hero.jsx:5</code> תמונה ללא טקסט חלופי</dt>
+            <dd>להוסיף <code>alt</code> עם תיאור עברי קצר. אם התמונה דקורטיבית בלבד, <code>alt=""</code>.</dd>
+            <dt><code>style.css:12</code> ניגודיות 1.27:1</dt>
+            <dd>נדרש 4.5:1 לטקסט רגיל. להכהות את הטקסט או להבהיר את הרקע, ולאמת במד הניגודיות.</dd>
+            <dt>הצהרת נגישות לא נמצאה</dt>
+            <dd>חובה חוקית. הסקיל מספק תבנית, ואת פרטי רכז הנגישות משלימים בעצמכם.</dd>
+          </dl>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="install" aria-labelledby="install-title">
+  <section id="checks" aria-labelledby="checks-t">
     <div class="wrap">
-      <h2 id="install-title">התקנה</h2>
-      <p class="section-lede">בוחרים את הסביבה שבה עובדים עם Claude.</p>
-      <div class="two">
-        <div class="card">
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">02</span>
+        <h2 id="checks-t">שתים עשרה בדיקות</h2>
+        <p>קריטריוני WCAG 2.0/2.1 ברמת AA שעליהם מבוסס ת"י 5568, ועוד שתי דרישות שקיימות רק בישראל.</p>
+      </div>
+      <ul class="checks">
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="6" width="36" height="32" rx="6" fill="var(--paper-2)" stroke="var(--rule)"/><text x="22" y="30" text-anchor="middle" font-family="var(--mono)" font-size="15" font-weight="700" fill="var(--ink)">he</text><path d="M30 12h6m0 0l-3-3m3 3l-3 3" stroke="var(--focus)" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+          <div><b>שפת העמוד</b><small><code>lang="he"</code> בתג html. WCAG 3.1.1</small><span class="tag ok">תיקון אוטומטי</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M36 22H10m0 0l8-8m-8 8l8 8" stroke="var(--focus)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="36" height="36" rx="8" fill="none" stroke="var(--rule)"/></svg>
+          <div><b>כיווניות מימין לשמאל</b><small><code>dir="rtl"</code> לעמוד עברי. דרישה ישראלית</small><span class="tag ok">תיקון אוטומטי</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="12" width="32" height="20" rx="4" fill="var(--paper-2)" stroke="var(--rule)"/><text x="22" y="27" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="700" fill="var(--ink)">TAB</text><circle cx="36" cy="12" r="5" fill="var(--focus)"/></svg>
+          <div><b>סדר מעבר במקלדת</b><small><code>tabindex</code> חיובי ששובר את הסדר. WCAG 2.4.3</small><span class="tag ok">תיקון אוטומטי</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="8" y="4" width="28" height="36" rx="3" fill="var(--paper-2)" stroke="var(--rule)"/><path d="M14 14h16M14 20h16M14 26h10" stroke="var(--rule)" stroke-width="2"/><circle cx="30" cy="31" r="7" fill="none" stroke="var(--focus)" stroke-width="2.2"/><path d="M27 31l2 2 4-4" stroke="var(--focus)" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+          <div><b>הצהרת נגישות</b><small>קיימת ומקושרת מכל עמוד. תקנות 2013</small><span class="tag law">חובה חוקית</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="5" y="8" width="34" height="28" rx="4" fill="var(--paper-2)" stroke="var(--rule)"/><path d="M9 32l9-11 7 8 5-5 6 8z" fill="var(--rule)"/><circle cx="30" cy="16" r="3" fill="var(--rule)"/><rect x="24" y="28" width="16" height="10" rx="3" fill="var(--focus)"/><text x="32" y="36" text-anchor="middle" font-family="var(--mono)" font-size="7.5" font-weight="700" fill="#1a1a1a">alt</text></svg>
+          <div><b>טקסט חלופי לתמונות</b><small>חסר, או ריק על תמונה שאינה דקורטיבית. WCAG 1.1.1</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="20" width="32" height="16" rx="4" fill="var(--paper-2)" stroke="var(--rule)"/><rect x="6" y="8" width="18" height="7" rx="2" fill="var(--focus)"/><path d="M12 28h14" stroke="var(--rule)" stroke-width="2"/></svg>
+          <div><b>תוויות לשדות טופס</b><small><code>label</code> או <code>aria-label</code> לכל קלט. WCAG 1.3.1, 4.1.2</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="16" fill="var(--paper-2)" stroke="var(--rule)"/><path d="M22 6a16 16 0 010 32z" fill="var(--ink)"/><path d="M22 6a16 16 0 000 32" fill="none"/></svg>
+          <div><b>ניגודיות צבעים</b><small>חישוב יחס אמיתי מול 4.5:1 ו-3:1. WCAG 1.4.3</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="14" width="32" height="16" rx="8" fill="var(--paper-2)" stroke="var(--rule)"/><circle cx="14" cy="22" r="3" fill="var(--rule)"/><path d="M22 22h10" stroke="var(--focus)" stroke-width="2.5" stroke-dasharray="2 3" stroke-linecap="round"/></svg>
+          <div><b>קישורים וכפתורים ריקים</b><small>אייקון בלי שם נגיש. WCAG 2.4.4, 4.1.2</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><text x="6" y="16" font-family="var(--display)" font-size="14" font-weight="700" fill="var(--ink)">H1</text><text x="14" y="27" font-family="var(--display)" font-size="12" font-weight="700" fill="var(--ink-2)">H2</text><text x="22" y="38" font-family="var(--display)" font-size="11" font-weight="700" fill="var(--focus)">H4?</text></svg>
+          <div><b>היררכיית כותרות</b><small>דילוגים, h1 חסר או כפול. WCAG 1.3.1</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="6" width="32" height="8" rx="2" fill="var(--rule)"/><rect x="6" y="18" width="32" height="20" rx="2" fill="var(--paper-2)" stroke="var(--rule)"/><path d="M22 8v18m0 0l-5-5m5 5l5-5" stroke="var(--focus)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+          <div><b>קישור דילוג לתוכן</b><small>מעקף לניווט בראש העמוד. WCAG 2.4.1</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="5" y="12" width="34" height="20" rx="5" fill="var(--paper-2)" stroke="var(--rule)"/><text x="22" y="26" text-anchor="middle" font-family="var(--mono)" font-size="9" font-weight="700" fill="var(--ink)">role=?</text><circle cx="36" cy="12" r="5" fill="var(--focus)"/></svg>
+          <div><b>תפקידי ARIA</b><small>ערך <code>role</code> שאינו קיים בתקן. WCAG 4.1.2</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="5" y="9" width="34" height="26" rx="4" fill="var(--paper-2)" stroke="var(--rule)"/><path d="M18 16v12l10-6z" fill="var(--ink)"/><path d="M30 14l8 8m0-8l-8 8" stroke="var(--focus)" stroke-width="2.5" stroke-linecap="round"/></svg>
+          <div><b>מדיה שמתנגנת לבד</b><small><code>autoplay</code> בלי השתקה. WCAG 1.4.2</small><span class="tag warn">הצעת פתרון</span></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="contrast" aria-labelledby="contrast-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">03</span>
+        <h2 id="contrast-t">מד ניגודיות</h2>
+        <p>אותה נוסחה שהסורק מריץ על ה-CSS שלכם. בחרו צבע טקסט ורקע וראו אם הזוג עובר את הסף.</p>
+      </div>
+      <div class="tool">
+        <div class="panel">
+          <div class="field">
+            <label for="fg-hex">צבע טקסט</label>
+            <div class="row"><input type="color" id="fg-pick" value="#777777" aria-label="בחירת צבע טקסט"><input type="text" id="fg-hex" value="#777777" spellcheck="false" inputmode="text" maxlength="7"></div>
+          </div>
+          <div class="field">
+            <label for="bg-hex">צבע רקע</label>
+            <div class="row"><input type="color" id="bg-pick" value="#888888" aria-label="בחירת צבע רקע"><input type="text" id="bg-hex" value="#888888" spellcheck="false" inputmode="text" maxlength="7"></div>
+          </div>
+          <div class="ratio" aria-live="polite"><b id="ratio">1.13</b><span>: 1</span></div>
+          <div class="meter" aria-hidden="true"><i id="meter" style="width:5%"></i></div>
+          <div class="meter-marks" aria-hidden="true"><span>1</span><span>3</span><span>4.5</span><span>7</span><span>21</span></div>
+          <div class="verdicts" id="verdicts">
+            <span class="verdict fail">טקסט רגיל AA (4.5)</span>
+            <span class="verdict fail">טקסט גדול AA (3)</span>
+            <span class="verdict fail">AAA (7)</span>
+          </div>
+        </div>
+        <div class="preview" id="preview" style="background:#888888;color:#777777">
+          <div class="big">כותרת לדוגמה</div>
+          <p class="small" style="margin:0">טקסט רגיל בגודל קריאה. לפי ת"י 5568, טקסט רגיל צריך יחס של 4.5:1 לפחות, וטקסט גדול או מודגש 3:1.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install" aria-labelledby="install-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">04</span>
+        <h2 id="install-t">התקנה בדקה</h2>
+        <p>בוחרים את הסביבה שבה עובדים עם Claude. אין חבילות להתקין, רק Python 3 שכבר יש בכל מחשב.</p>
+      </div>
+      <div class="install">
+        <div class="panel">
           <h3>Claude.ai או אפליקציית Claude</h3>
           <ol>
-            <li><a href="https://github.com/jordanhemo/il-accessibility-audit/raw/main/docs/il-accessibility-audit.skill">מורידים את קובץ הסקיל</a>.</li>
-            <li>נכנסים להגדרות, ובחלק של הסקילים (Skills) מעלים את הקובץ.</li>
+            <li><a href="https://github.com/jordanhemo/il-accessibility-audit/raw/main/docs/il-accessibility-audit.skill">מורידים את קובץ הסקיל</a> (‎.skill).</li>
+            <li>בהגדרות, בחלק Skills, מעלים את הקובץ.</li>
             <li>מבקשים מ-Claude לבדוק נגישות של פרויקט.</li>
           </ol>
         </div>
-        <div class="card">
+        <div class="panel">
           <h3>Claude Code</h3>
-          <p>מעתיקים את תיקיית הסקיל לתיקיית הסקילים של המשתמש:</p>
-<pre>git clone https://github.com/jordanhemo/il-accessibility-audit.git
+          <p style="margin:0">מעתיקים את תיקיית הסקיל לתיקיית הסקילים של המשתמש:</p>
+<pre class="sh">git clone https://github.com/jordanhemo/il-accessibility-audit.git
 cp -r il-accessibility-audit/il-accessibility-audit ~/.claude/skills/</pre>
-          <p class="small">נדרש Python 3. אין חבילות נוספות להתקנה.</p>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section aria-labelledby="use-title">
-    <div class="wrap">
-      <h2 id="use-title">איך מבקשים</h2>
-      <p class="section-lede">אין צורך לזכור שם של פקודה. מספיק לכתוב בשפה חופשית, למשל:</p>
-      <ul class="prompts">
+      <ul class="prompts" aria-label="דוגמאות לבקשות">
         <li>תבדוק אם האתר בתיקייה הזו עומד בתקן הנגישות הישראלי ותתקן מה שאפשר</li>
         <li>אני צריך דוח נגישות לפי תקן 5568 לפרויקט ה-Next.js שלי</li>
         <li>חסרה לנו הצהרת נגישות? תכין לי אחת</li>
@@ -297,36 +429,80 @@ cp -r il-accessibility-audit/il-accessibility-audit ~/.claude/skills/</pre>
     </div>
   </section>
 
-  <section aria-labelledby="limits-title">
+  <section id="law" aria-labelledby="law-t">
     <div class="wrap">
-      <h2 id="limits-title">חשוב לדעת</h2>
-      <div class="note">
-        <p>
-          הסקיל מבצע סריקה סטטית של קוד המקור. הוא מוצא את רוב בעיות המבנה והסימון, אבל לא רואה
-          תוכן שנוצר בזמן ריצה, ולא מפענח משתני CSS או ירושת צבעים.
-        </p>
-        <p>
-          הדוח הוא כלי עזר ואינו מחליף בדיקת נגישות מקצועית או ייעוץ משפטי.
-          לאישור עמידה בתקנות מומלץ לשלב בודק נגישות מוסמך ובדיקה עם משתמשים אמיתיים.
-        </p>
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">05</span>
+        <h2 id="law-t">מה החוק דורש</h2>
+      </div>
+      <div class="law">
+        <svg viewBox="0 0 180 180" aria-hidden="true">
+          <circle cx="90" cy="90" r="84" fill="none" stroke="var(--focus)" stroke-width="3"/>
+          <circle cx="90" cy="90" r="72" fill="none" stroke="var(--focus)" stroke-width="1.5" stroke-dasharray="3 4"/>
+          <text x="90" y="82" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="44" fill="var(--ink)">ת"י</text>
+          <text x="90" y="122" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="40" fill="var(--focus-ink)">5568</text>
+          <text x="90" y="146" text-anchor="middle" font-family="var(--body)" font-weight="700" font-size="11" fill="var(--ink-2)">WCAG 2.0 / 2.1 · AA</text>
+        </svg>
+        <div>
+          <p><strong>תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), תשע"ג-2013</strong> מחייבות כל אתר שנותן שירות לציבור לעמוד בתקן ישראלי 5568, שהוא הגרסה הישראלית של WCAG ברמת AA.</p>
+          <p>מעבר לדרישות הטכניות, החוק מחייב לפרסם <strong>הצהרת נגישות</strong> המקושרת מכל עמוד, ובה רמת ההתאמה, ההתאמות שבוצעו, פרטי רכז הנגישות ותאריך העדכון. נציבות שוויון זכויות רשאית להטיל עיצומים כספיים על אתרים שאינם עומדים בדרישות.</p>
+          <p>הסקיל מבצע סריקה סטטית של קוד המקור ומוצא את רוב בעיות המבנה והסימון. הוא אינו רואה תוכן שנוצר בזמן ריצה ואינו מחליף בדיקה של בודק נגישות מוסמך או ייעוץ משפטי.</p>
+        </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer id="statement">
+<footer>
   <div class="wrap">
-    <h2>הצהרת נגישות של עמוד זה</h2>
-    <p>
-      העמוד נבנה בהתאם להנחיות WCAG 2.1 ברמת AA: שפה וכיווניות מוגדרות, קישור לדילוג לתוכן,
-      ניווט מלא במקלדת עם סימון מיקוד ברור, ניגודיות צבעים תקינה במצב בהיר וכהה, וכיבוד הגדרת הפחתת תנועה.
-    </p>
-    <p>
-      נתקלת בבעיית נגישות? אפשר לדווח דרך
-      <a href="https://github.com/jordanhemo/il-accessibility-audit/issues">דף הדיווח על תקלות ב-GitHub</a>.
-    </p>
-    <p>קוד פתוח ברישיון MIT.</p>
+    <div>
+      <h2>הצהרת נגישות של עמוד זה</h2>
+      <p>העמוד נבנה לפי WCAG 2.1 ברמת AA: שפה וכיווניות מוגדרות, קישור דילוג לתוכן, ניווט מלא במקלדת עם סימון מיקוד ברור, ניגודיות תקינה במצב בהיר וכהה, וכיבוד הגדרת הפחתת תנועה.</p>
+    </div>
+    <div>
+      <p>נתקלתם בבעיית נגישות או בממצא שגוי של הסורק? פתחו דיווח ב-<a href="https://github.com/jordanhemo/il-accessibility-audit/issues">GitHub Issues</a>.</p>
+      <p>קוד פתוח ברישיון MIT.</p>
+    </div>
   </div>
 </footer>
+
+<script>
+(function () {
+  var fgPick = document.getElementById('fg-pick'), fgHex = document.getElementById('fg-hex');
+  var bgPick = document.getElementById('bg-pick'), bgHex = document.getElementById('bg-hex');
+  var ratioEl = document.getElementById('ratio'), meter = document.getElementById('meter');
+  var verdicts = document.getElementById('verdicts').children, preview = document.getElementById('preview');
+
+  function parse(h) {
+    h = (h || '').trim().replace(/^#/, '');
+    if (/^[0-9a-f]{3}$/i.test(h)) h = h.replace(/./g, function (c) { return c + c; });
+    if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+    return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16); });
+  }
+  function lum(rgb) {
+    var c = rgb.map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function update() {
+    var fg = parse(fgHex.value), bg = parse(bgHex.value);
+    if (!fg || !bg) return;
+    var l1 = lum(fg), l2 = lum(bg);
+    var r = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    ratioEl.textContent = r.toFixed(2);
+    meter.style.width = Math.min(100, Math.log(r) / Math.log(21) * 100) + '%';
+    [[4.5, 'טקסט רגיל AA (4.5)'], [3, 'טקסט גדול AA (3)'], [7, 'AAA (7)']].forEach(function (t, i) {
+      var pass = r >= t[0];
+      verdicts[i].className = 'verdict ' + (pass ? 'pass' : 'fail');
+      verdicts[i].textContent = (pass ? 'עובר ' : 'נכשל ') + t[1];
+    });
+    preview.style.color = fgHex.value; preview.style.background = bgHex.value;
+  }
+  function bind(pick, hex) {
+    pick.addEventListener('input', function () { hex.value = pick.value; update(); });
+    hex.addEventListener('input', function () { var p = parse(hex.value); if (p) { pick.value = '#' + p.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join(''); } update(); });
+  }
+  bind(fgPick, fgHex); bind(bgPick, bgHex); update();
+})();
+</script>
 </body>
 </html>
