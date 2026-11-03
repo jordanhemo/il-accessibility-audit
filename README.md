@@ -8,6 +8,24 @@ An agent skill that audits a web project against **Israeli Standard 5568** (WCAG
 - **התקנה / Install:** [INSTALL.md](INSTALL.md)
 - **הורדה / Download:** [dist/il-accessibility-audit.skill](dist/il-accessibility-audit.skill) · [dist/il-accessibility-audit.zip](dist/il-accessibility-audit.zip)
 
+## התקנה כפלאגין ל-Claude Code / Install as a Claude Code plugin
+
+בשורת הפקודה של Claude Code:
+
+```
+/plugin install il-accessibility-audit --marketplace jordanhemo/il-accessibility-audit
+```
+
+מאשרים (`y`) את הוספת ה-marketplace ובוחרים היקף התקנה. מהטרמינל:
+
+```bash
+claude plugin install il-accessibility-audit --marketplace jordanhemo/il-accessibility-audit
+```
+
+באפליקציית הדסקטופ: + ליד תיבת ההקלדה → Plugins → Add marketplace עם `jordanhemo/il-accessibility-audit` → Add plugin.
+
+עדכון לגרסה חדשה: `/plugin marketplace update il-accessibility-audit`. להתקנה ב-Claude.ai, Codex וסוכנים אחרים ראו [INSTALL.md](INSTALL.md).
+
 ## מה הסקיל עושה
 
 1. **סורק** קובצי HTML, JSX/TSX, Vue, Svelte ו-CSS (Python 3, ללא תלויות).

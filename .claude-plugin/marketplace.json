@@ -1,0 +1,11 @@
+{
+  "name": "il-accessibility-audit",
+  "owner": { "name": "jordanhemo" },
+  "plugins": [
+    {
+      "name": "il-accessibility-audit",
+      "source": "./",
+      "description": "Audit web projects against Israeli Standard 5568 (WCAG 2.0/2.1 AA + Israeli rules): Hebrew report, safe auto-fixes."
+    }
+  ]
+}

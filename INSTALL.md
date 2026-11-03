@@ -13,6 +13,19 @@ Requires Python 3. No packages to install.
 
 ## Claude Code
 
+**As a plugin (recommended).** This repository is a plugin marketplace. At the Claude Code prompt:
+
+```
+/plugin install il-accessibility-audit --marketplace jordanhemo/il-accessibility-audit
+```
+
+Answer `y` to add the marketplace, then pick a scope. From a shell:
+`claude plugin install il-accessibility-audit --marketplace jordanhemo/il-accessibility-audit`.
+In the desktop app: + next to the prompt box → Plugins → Add marketplace `jordanhemo/il-accessibility-audit` → Add plugin.
+Get later versions with `/plugin marketplace update il-accessibility-audit`.
+
+**As a plain skill folder:**
+
 ```bash
 git clone https://github.com/jordanhemo/il-accessibility-audit.git
 cp -r il-accessibility-audit/il-accessibility-audit ~/.claude/skills/

@@ -1,0 +1,11 @@
+{
+  "name": "il-accessibility-audit",
+  "version": "1.0.0",
+  "description": "Audit web projects against Israeli Standard 5568 (WCAG 2.0/2.1 AA + Israeli rules): Hebrew report, safe auto-fixes.",
+  "author": { "name": "jordanhemo" },
+  "homepage": "https://il-accessibility-site.vercel.app/",
+  "repository": "https://github.com/jordanhemo/il-accessibility-audit",
+  "license": "MIT",
+  "keywords": ["accessibility", "a11y", "wcag", "israel", "hebrew", "rtl", "5568"],
+  "skills": ["./il-accessibility-audit"]
+}

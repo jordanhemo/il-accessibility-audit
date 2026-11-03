@@ -16,6 +16,9 @@ beyond Python 3.
   positive `tabindex` values.
 - Background on the law and the rule-to-WCAG mapping: `il-accessibility-audit/references/`.
 - To install the skill for a user, follow `INSTALL.md`.
+- `.claude-plugin/` makes the repo a Claude Code plugin marketplace; `plugin.json` points its
+  `skills` at `./il-accessibility-audit`. Bump `version` in `plugin.json` on every release, or
+  installed copies won't update. Check with `claude plugin validate .`.
 - When changing `scan.py`, run it against a small sample project with known issues (an `<img>`
   without `alt`, an `<input>` without a label, a `tabindex="5"`, a low-contrast CSS rule) and
   confirm the JSON output lists each one. There is no test suite beyond that.
