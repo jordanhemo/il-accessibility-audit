@@ -6,7 +6,7 @@ An agent skill that audits a web project against **Israeli Standard 5568** (WCAG
 
 - **אתר והסבר:** https://github.com/jordanhemo/il-accessibility-site
 - **התקנה / Install:** [INSTALL.md](INSTALL.md)
-- **הורדה / Download:** [latest release](https://github.com/jordanhemo/il-accessibility-audit/releases/latest)
+- **הורדה / Download:** [dist/il-accessibility-audit.skill](dist/il-accessibility-audit.skill) · [dist/il-accessibility-audit.zip](dist/il-accessibility-audit.zip)
 
 ## מה הסקיל עושה
 

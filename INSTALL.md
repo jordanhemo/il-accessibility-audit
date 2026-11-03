@@ -4,8 +4,8 @@
 
 The skill uses the [Agent Skills](https://agentskills.io) format (a folder with a `SKILL.md`), supported by Claude, Codex CLI and others. Any other agent can run the scanner directly.
 
-**Download:** https://github.com/jordanhemo/il-accessibility-audit/releases/latest/download/il-accessibility-audit.zip
-(same content as `.skill`: https://github.com/jordanhemo/il-accessibility-audit/releases/latest/download/il-accessibility-audit.skill)
+**Download:** https://github.com/jordanhemo/il-accessibility-audit/raw/main/dist/il-accessibility-audit.zip
+(same content as `.skill`: https://github.com/jordanhemo/il-accessibility-audit/raw/main/dist/il-accessibility-audit.skill)
 
 Requires Python 3. No packages to install.
 
