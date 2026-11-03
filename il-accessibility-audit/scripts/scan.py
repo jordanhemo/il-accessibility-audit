@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
 Static accessibility scanner for Israeli Standard 5568 / WCAG 2.0-2.1 AA compliance.
-Read-only: emits a JSON array of issues on stdout. It never edits files -
-the calling agent decides what to fix and applies edits itself.
+Works with any AI agent or on its own: read-only by default, emits JSON or a
+Hebrew markdown report, and with --fix applies the few unambiguous fixes itself.
 
 Usage:
-    python3 scan.py <project_dir> [--ext html,jsx,tsx,vue,js,ts] [--skip node_modules,dist,build,.git]
+    python3 scan.py <project_dir>                      # JSON issues on stdout
+    python3 scan.py <project_dir> --format md          # markdown report on stdout
+    python3 scan.py <project_dir> --format md --fix --report accessibility-report.md
+    options: [--ext html,jsx,tsx,vue,js,ts] [--skip node_modules,dist,build,.git]
 
 Each issue:
 {
@@ -174,8 +177,8 @@ class A11yHTMLParser(html.parser.HTMLParser):
                     "severity": "serious", "wcag": "3.1.1",
                     "message_he": "לתג <html> אין מאפיין lang. קורא מסך לא יידע לבחור מנגנון הגייה/ניקוד נכון.",
                     "fixable": True,
-                    "suggested_fix": 'הוסף lang="he" לתג <html>.',
-                    "exact_replacement": {"old": "<html", "new": '<html lang="he"'},
+                    "suggested_fix": 'הוסף lang="he" dir="rtl" לתג <html>.',
+                    "exact_replacement": {"old": "<html", "new": '<html lang="he" dir="rtl"'} if "dir" not in d else {"old": "<html", "new": '<html lang="he"'},
                     "snippet": self.snippet_at(),
                 })
             elif lang.lower().startswith("he"):
@@ -422,6 +425,8 @@ def scan_file(path, root, issues, skip_link_tracker):
 def scan_project_for_statement(root, extensions, skip_dirs, issues):
     found = False
     for path in collect_files(root, extensions | {".md"}, skip_dirs):
+        if os.path.basename(path) == "accessibility-report.md":
+            continue
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as f:
                 text = f.read()
@@ -441,11 +446,117 @@ def scan_project_for_statement(root, extensions, skip_dirs, issues):
         })
 
 
+SEVERITY_ORDER = ["critical", "serious", "moderate", "minor"]
+SEVERITY_HE = {"critical": "קריטי", "serious": "חמור", "moderate": "בינוני", "minor": "קל"}
+
+
+def apply_fixes(root, issues):
+    """Apply every exact_replacement once per file. Returns the issues that were fixed."""
+    fixed = []
+    by_file = {}
+    for issue in issues:
+        if issue.get("fixable") and issue.get("exact_replacement"):
+            by_file.setdefault(issue["file"], []).append(issue)
+    for rel, file_issues in by_file.items():
+        path = os.path.join(root, rel)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        original = text
+        for issue in file_issues:
+            old, new = issue["exact_replacement"]["old"], issue["exact_replacement"]["new"]
+            if text.count(old) == 1:
+                text = text.replace(old, new)
+                issue["status"] = "fixed"
+                fixed.append(issue)
+            elif old in text and issue["rule"] == "positive-tabindex":
+                text = text.replace(old, new)
+                issue["status"] = "fixed"
+                fixed.append(issue)
+        if text != original:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(text)
+    return fixed
+
+
+def render_markdown(root, issues, file_count, fixed):
+    import datetime
+    fixed_ids = {id(i) for i in fixed}
+    open_issues = [i for i in issues if id(i) not in fixed_ids]
+    statement_missing = any(i["rule"] == "missing-accessibility-statement" for i in issues)
+    critical_open = sum(1 for i in open_issues if i["severity"] == "critical")
+    out = []
+    out.append(f"# דוח נגישות — {os.path.basename(root) or root} (ת\"י 5568 / WCAG 2.0-2.1 AA)")
+    out.append(f"תאריך: {datetime.date.today().isoformat()}  ")
+    out.append(f"נסרקו: {file_count} קבצים | נמצאו: {len(issues)} ממצאים | תוקנו אוטומטית: {len(fixed)} | פתוחים: {len(open_issues)}")
+    out.append("")
+    out.append("## סיכום לפי חוק")
+    if statement_missing:
+        out.append("**לא נמצאה הצהרת נגישות בפרויקט.** תקנות נגישות השירות (תשע\"ג-2013) מחייבות כל אתר שנותן שירות לציבור לפרסם הצהרת נגישות המקושרת מכל עמוד. כל עוד היא חסרה, האתר אינו עומד בדרישות החוק גם אם שאר הממצאים יתוקנו.")
+    else:
+        out.append("נמצאה התייחסות להצהרת נגישות בפרויקט. יש לוודא שהיא מקושרת מכל עמוד ומכילה את פרטי רכז הנגישות ותאריך עדכון.")
+    if critical_open:
+        out.append(f"נותרו {critical_open} ממצאים קריטיים שדורשים טיפול לפני שניתן להצהיר על עמידה בתקן.")
+    elif not open_issues:
+        out.append("לא נותרו ממצאים פתוחים בסריקה הסטטית.")
+    out.append("")
+    out.append("הסריקה סטטית: היא בודקת את קוד המקור ולא תוכן שנוצר בזמן ריצה, ואינה מפענחת משתני CSS. הדוח הוא כלי עזר ואינו מחליף בדיקת נגישות מקצועית או ייעוץ משפטי.")
+    out.append("")
+    out.append("## כל הממצאים")
+    out.append("| חומרה | קובץ:שורה | כלל | WCAG | תיאור | סטטוס |")
+    out.append("|---|---|---|---|---|---|")
+    ordered = sorted(issues, key=lambda i: (SEVERITY_ORDER.index(i["severity"]), i["file"], i["line"]))
+    for i in ordered:
+        loc = f"`{i['file']}:{i['line']}`" if i["line"] else f"`{i['file']}`"
+        status = "תוקן" if id(i) in fixed_ids else ("ניתן לתיקון אוטומטי" if i.get("fixable") else "דורש החלטה")
+        desc = i["message_he"].replace("|", "\\|")
+        out.append(f"| {SEVERITY_HE[i['severity']]} | {loc} | `{i['rule']}` | {i['wcag']} | {desc} | {status} |")
+    out.append("")
+    out.append("## תוקן אוטומטית")
+    if fixed:
+        for i in fixed:
+            r = i["exact_replacement"]
+            out.append(f"- `{i['file']}:{i['line']}` — `{r['old']}` → `{r['new']}`")
+    else:
+        out.append("לא בוצעו תיקונים אוטומטיים (הרץ עם `--fix` כדי ליישם את התיקונים החד-משמעיים).")
+    out.append("")
+    out.append("## דורש החלטה אנושית")
+    decisions = [i for i in open_issues if not i.get("fixable")]
+    if decisions:
+        for i in sorted(decisions, key=lambda i: (SEVERITY_ORDER.index(i["severity"]), i["file"], i["line"])):
+            loc = f"`{i['file']}:{i['line']}`" if i["line"] else f"`{i['file']}`"
+            out.append(f"### {loc} — {i['rule']} ({SEVERITY_HE[i['severity']]})")
+            out.append(i["message_he"])
+            out.append("")
+            out.append(f"**פתרון מוצע:** {i['suggested_fix']}")
+            if i.get("snippet"):
+                out.append("")
+                out.append("```")
+                out.append(i["snippet"])
+                out.append("```")
+            out.append("")
+    else:
+        out.append("אין.")
+        out.append("")
+    out.append("## הצהרת נגישות")
+    if statement_missing:
+        out.append("חסרה. יש ליצור דף הצהרת נגישות (תבנית ב-`references/accessibility-statement-template.md` של הסקיל), למלא את פרטי רכז הנגישות ותאריך העדכון, ולקשר אליו מהפוטר בכל עמוד. אין למלא פרטים אלה בניחוש.")
+    else:
+        out.append("נמצאה. יש לוודא שהתוכן מעודכן ותואם לממצאי הסריקה הנוכחית.")
+    out.append("")
+    return "\n".join(out)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("project_dir")
     ap.add_argument("--ext", default=",".join(e.lstrip(".") for e in SCAN_EXTENSIONS))
     ap.add_argument("--skip", default=",".join(DEFAULT_SKIP_DIRS))
+    ap.add_argument("--format", choices=["json", "md"], default="json")
+    ap.add_argument("--fix", action="store_true", help="apply the unambiguous fixes (lang, dir, tabindex) in place")
+    ap.add_argument("--report", help="also write the markdown report to this path")
     args = ap.parse_args()
 
     extensions = {f".{e.strip().lstrip('.')}" for e in args.ext.split(",") if e.strip()}
@@ -455,7 +566,9 @@ def main():
     issues = []
     html_like = {e for e in extensions if e != ".css" and e != ".scss" and e != ".less"} | {".css", ".scss", ".less"}
     skip_link_tracker = {"candidate_files": [], "found_any": False}
+    file_count = 0
     for path in collect_files(root, html_like, skip_dirs):
+        file_count += 1
         scan_file(path, root, issues, skip_link_tracker)
 
     scan_project_for_statement(root, extensions, skip_dirs, issues)
@@ -470,7 +583,20 @@ def main():
             "exact_replacement": None, "snippet": "",
         })
 
-    print(json.dumps(issues, ensure_ascii=False, indent=2))
+    fixed = apply_fixes(root, issues) if args.fix else []
+    for i in issues:
+        i.setdefault("status", "open")
+
+    if args.format == "md" or args.report:
+        report = render_markdown(root, issues, file_count, fixed)
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report)
+            print(f"report written to {args.report}", file=sys.stderr)
+    if args.format == "md":
+        print(report)
+    else:
+        print(json.dumps(issues, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
